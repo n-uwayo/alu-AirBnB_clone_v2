@@ -187,6 +187,7 @@ class TestConsole(unittest.TestCase):
         with patch('sys.stdout', new=StringIO()) as f:
             self.consol.onecmd("all State")
             self.assertEqual("[]\n", f.getvalue())
+            
 
     @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") == "db",
                      "can't run if storage is db")

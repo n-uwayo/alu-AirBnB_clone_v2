@@ -10,7 +10,15 @@ from models.amenity import Amenity
 from models.place import Place
 from models.review import Review
 
+
 class FileStorage:
+    """This class serializes instances to a JSON file and
+    deserializes JSON file to instances
+    Attributes:
+        __file_path: path to the JSON file
+        __objects: objects will be stored
+    """
+
     __file_path = "file.json"
     __objects = {}
 
@@ -23,32 +31,32 @@ class FileStorage:
     def new(self, obj):
         """Adds a new object to the storage"""
         if obj:
-            key = f"{type(obj).__name__}.{obj.id}"
+            key = "{}.{}".format(type(obj).__name__, obj.id)
             self.__objects[key] = obj
 
     def save(self):
         """Serializes the objects to a JSON file"""
-        serialized_objects = {key: value.to_dict() for key, value in self.__objects.items()}
-        with open(self.__file_path, 'w', encoding="UTF-8") as file:
-            json.dump(serialized_objects, file)
+        my_dict = {key: value.to_dict() for key, value in self.__objects.items()}
+        with open(self.__file_path, 'w', encoding="UTF-8") as f:
+            json.dump(my_dict, f)
 
     def reload(self):
         """Deserializes the JSON file to objects"""
         try:
-            with open(self.__file_path, 'r', encoding="UTF-8") as file:
-                serialized_objects = json.load(file)
-                for key, value in serialized_objects.items():
-                    obj = eval(value["__class__"])(**value)
-                    self.__objects[key] = obj
+            with open(self.__file_path, 'r', encoding="UTF-8") as f:
+                for key, value in json.load(f).items():
+                    value = eval(value["__class__"])(**value)
+                    self.__objects[key] = value
         except FileNotFoundError:
             pass
 
     def delete(self, obj=None):
         """Deletes an object if it exists in the storage"""
         if obj:
-            key = f"{type(obj).__name__}.{obj.id}"
-            self.__objects.pop(key, None)
-            self.save()
+            key = "{}.{}".format(type(obj).__name__, obj.id)
+            if key in self.__objects:
+                del self.__objects[key]
+                self.save()
 
     def close(self):
         """Deserializes the JSON file to objects"""
@@ -78,4 +86,4 @@ class FileStorage:
                       "number_rooms": int, "number_bathrooms": int, "max_guest": int,
                       "price_by_night": int, "latitude": float, "longitude": float, "amenity_ids": list},
             "Review": {"place_id": str, "user_id": str, "text": str}
-        }  
+        }
